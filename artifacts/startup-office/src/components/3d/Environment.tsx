@@ -469,9 +469,6 @@ export function OfficeEnvironment() {
       <Door pos={[-5, 0, 8]} rot={Math.PI / 2} open />
       <Door pos={[4, 0, 21]} rot={0} open />
 
-      {/* ── Ceiling ── */}
-      <Box pos={[0, 3.5, 0]} size={[42, 0.2, 42]} color="#0f172a" roughness={1} />
-
       {/* ── Ceiling Lights ── */}
       {/* Workstation lights */}
       {[-3, 5, 13].map(x => [-12, -6, 0].map(z => (
