@@ -262,26 +262,6 @@ function CoffeeMachine({ pos }: { pos: [number, number, number] }) {
   )
 }
 
-/* ─── Ceiling Light Panel ─── */
-function CeilingLight({ pos }: { pos: [number, number, number] }) {
-  const ref = useRef<THREE.MeshStandardMaterial>(null)
-  useFrame(({ clock }) => {
-    if (ref.current) {
-      ref.current.emissiveIntensity = 0.9 + Math.sin(clock.elapsedTime * 2) * 0.02
-    }
-  })
-  return (
-    <group position={pos}>
-      <Box pos={[0, 0, 0]} size={[1.2, 0.05, 0.4]} color="#1f2937" roughness={0.3} />
-      <mesh position={[0, -0.025, 0]}>
-        <boxGeometry args={[1.1, 0.01, 0.35]} />
-        <meshStandardMaterial ref={ref} color="#e0e7ff" emissive="#c7d2fe" emissiveIntensity={0.9} roughness={0} />
-      </mesh>
-      <pointLight position={[0, -0.5, 0]} intensity={2} color="#e0e7ff" distance={8} decay={2} />
-    </group>
-  )
-}
-
 /* ─── Window ─── */
 function Window({ pos, rot = 0 }: { pos: [number, number, number]; rot?: number }) {
   return (
@@ -468,23 +448,6 @@ export function OfficeEnvironment() {
       <Door pos={[-7.5, 0, -13.5]} rot={Math.PI / 2} open />
       <Door pos={[-5, 0, 8]} rot={Math.PI / 2} open />
       <Door pos={[4, 0, 21]} rot={0} open />
-
-      {/* ── Ceiling Lights ── */}
-      {/* Workstation lights */}
-      {[-3, 5, 13].map(x => [-12, -6, 0].map(z => (
-        <CeilingLight key={`${x}-${z}`} pos={[x, 3.4, z]} />
-      )))}
-      {/* CEO cabin */}
-      <CeilingLight pos={[-13, 3.4, -13]} />
-      <CeilingLight pos={[-13, 3.4, -7]} />
-      {/* Meeting room */}
-      <CeilingLight pos={[-11, 3.4, 9]} />
-      <CeilingLight pos={[-11, 3.4, 14]} />
-      {/* Lounge */}
-      <CeilingLight pos={[13, 3.4, 9]} />
-      <CeilingLight pos={[13, 3.4, 15]} />
-      {/* Entrance */}
-      <CeilingLight pos={[0, 3.4, 15]} />
 
       {/* Ambient fill lights for zones */}
       <pointLight position={[-13, 2.5, -13]} intensity={1.5} color="#e0e7ff" distance={10} decay={2} />
