@@ -1,6 +1,6 @@
 import { Component, type ReactNode } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, ContactShadows } from '@react-three/drei'
+import { OrbitControls, ContactShadows, Sky } from '@react-three/drei'
 import { OfficeEnvironment } from './Environment'
 import { Agent3D } from './Agent'
 import type { Agent } from '@workspace/api-client-react'
@@ -10,15 +10,9 @@ class WebGLErrorBoundary extends Component<{ children: ReactNode; fallback: Reac
     super(props)
     this.state = { hasError: false }
   }
-
-  static getDerivedStateFromError() {
-    return { hasError: true }
-  }
-
+  static getDerivedStateFromError() { return { hasError: true } }
   render() {
-    if (this.state.hasError) {
-      return this.props.fallback
-    }
+    if (this.state.hasError) return this.props.fallback
     return this.props.children
   }
 }
@@ -40,27 +34,51 @@ export function OfficeScene({ agents, selectedAgentId, onAgentClick }: OfficeSce
   )
 
   return (
-    <div className="w-full h-full absolute inset-0 bg-background">
+    <div className="w-full h-full absolute inset-0 bg-[#09090b]">
       <WebGLErrorBoundary fallback={fallback}>
-        <Canvas shadows camera={{ position: [25, 25, 25], fov: 40 }}>
+        <Canvas
+          shadows="soft"
+          camera={{ position: [28, 22, 28], fov: 45, near: 0.1, far: 200 }}
+          gl={{ antialias: true, alpha: false }}
+        >
           <color attach="background" args={['#09090b']} />
-          <fog attach="fog" args={['#09090b', 30, 80]} />
+          <fog attach="fog" args={['#09090b', 45, 90]} />
 
-          <ambientLight intensity={0.5} />
+          {/* Sky for ambient light tone */}
+          <Sky distance={450} sunPosition={[5, 1, 8]} inclination={0} azimuth={0.25} />
+
+          {/* Primary directional (sun) light */}
           <directionalLight
             castShadow
-            position={[10, 20, 10]}
-            intensity={1.5}
+            position={[15, 25, 15]}
+            intensity={1.2}
+            color="#e0e7ff"
             shadow-mapSize={[2048, 2048]}
-            shadow-camera-left={-20}
-            shadow-camera-right={20}
-            shadow-camera-top={20}
-            shadow-camera-bottom={-20}
+            shadow-camera-left={-30}
+            shadow-camera-right={30}
+            shadow-camera-top={30}
+            shadow-camera-bottom={-30}
+            shadow-camera-near={0.1}
+            shadow-camera-far={80}
+            shadow-bias={-0.001}
           />
+
+          {/* Soft fill from opposite direction */}
+          <directionalLight position={[-10, 12, -10]} intensity={0.4} color="#c7d2fe" />
+
+          {/* Warm ambient */}
+          <ambientLight intensity={0.35} color="#1e1b4b" />
 
           <OfficeEnvironment />
 
-          <ContactShadows position={[0, -0.09, 0]} opacity={0.4} scale={50} blur={2} far={4} />
+          <ContactShadows
+            position={[0, 0.02, 0]}
+            opacity={0.5}
+            scale={60}
+            blur={2.5}
+            far={5}
+            color="#000000"
+          />
 
           {agents.map((agent) => (
             <Agent3D
@@ -73,10 +91,17 @@ export function OfficeScene({ agents, selectedAgentId, onAgentClick }: OfficeSce
 
           <OrbitControls
             makeDefault
-            maxPolarAngle={Math.PI / 2 - 0.1}
-            minDistance={10}
-            maxDistance={50}
+            enablePan
+            enableZoom
+            enableRotate
+            maxPolarAngle={Math.PI / 2.15}
+            minPolarAngle={Math.PI / 6}
+            minDistance={8}
+            maxDistance={55}
             target={[0, 0, 0]}
+            zoomSpeed={0.8}
+            panSpeed={0.8}
+            rotateSpeed={0.5}
           />
         </Canvas>
       </WebGLErrorBoundary>
