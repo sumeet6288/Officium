@@ -3,23 +3,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { OfficePage } from "@/pages/OfficePage";
-import { SetupPage } from "@/pages/SetupPage";
 import NotFound from "@/pages/not-found";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: 1,
-    },
-  },
-});
+const queryClient = new QueryClient();
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={OfficePage} />
-      <Route path="/setup" component={SetupPage} />
       <Route component={NotFound} />
     </Switch>
   );

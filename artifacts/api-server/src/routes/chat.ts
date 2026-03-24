@@ -1,39 +1,23 @@
 import { Router, type IRouter } from "express";
-import { SendMessageBody } from "@workspace/api-zod";
-import { getApiKey } from "../lib/session-store";
 import { getHistory, addMessage, clearHistory } from "../lib/conversation-store";
 import { getAgent, updateAgentState } from "../data/agents";
-import Anthropic from "@anthropic-ai/sdk";
+import { anthropic } from "@workspace/integrations-anthropic-ai";
 
 const router: IRouter = Router();
 
 router.get("/:agentId", (req, res) => {
   const { agentId } = req.params;
-  const sessionId = req.query.sessionId as string;
-
-  if (!sessionId) {
-    res.status(400).json({ error: "sessionId is required" });
-    return;
-  }
-
+  const sessionId = (req.query.sessionId as string) || "default";
   const history = getHistory(sessionId, agentId);
   res.json(history);
 });
 
 router.post("/:agentId", async (req, res) => {
   const { agentId } = req.params;
-  const parsed = SendMessageBody.safeParse(req.body);
+  const { message, sessionId = "default" } = req.body as { message: string; sessionId?: string };
 
-  if (!parsed.success) {
-    res.status(400).json({ error: "Invalid request body" });
-    return;
-  }
-
-  const { message, sessionId } = parsed.data;
-  const apiKey = getApiKey(sessionId);
-
-  if (!apiKey) {
-    res.status(400).json({ error: "No API key configured. Please set up your Claude API key first." });
+  if (!message) {
+    res.status(400).json({ error: "message is required" });
     return;
   }
 
@@ -44,7 +28,6 @@ router.post("/:agentId", async (req, res) => {
   }
 
   updateAgentState(agentId, { status: "thinking" });
-
   addMessage(sessionId, agentId, "user", message);
 
   const history = getHistory(sessionId, agentId);
@@ -57,41 +40,33 @@ router.post("/:agentId", async (req, res) => {
     }));
 
   try {
-    const client = new Anthropic({ apiKey });
-    const response = await client.messages.create({
-      model: "claude-3-5-haiku-20241022",
-      max_tokens: 1024,
+    const response = await anthropic.messages.create({
+      model: "claude-haiku-4-5",
+      max_tokens: 8192,
       system: agent.systemPrompt,
       messages,
     });
 
     const content = response.content[0];
     if (content.type !== "text") {
-      res.status(500).json({ error: "Unexpected response type from Claude" });
+      res.status(500).json({ error: "Unexpected response type" });
       return;
     }
 
     const assistantMessage = addMessage(sessionId, agentId, "assistant", content.text);
-
     updateAgentState(agentId, { status: "working" });
-
     res.json(assistantMessage);
   } catch (err: unknown) {
     updateAgentState(agentId, { status: "idle" });
-    const errMessage = err instanceof Error ? err.message : "Claude API error";
+    const errMessage = err instanceof Error ? err.message : "AI error";
+    req.log.error({ err }, "Claude API error");
     res.status(500).json({ error: errMessage });
   }
 });
 
 router.delete("/:agentId", (req, res) => {
   const { agentId } = req.params;
-  const sessionId = req.query.sessionId as string;
-
-  if (!sessionId) {
-    res.status(400).json({ error: "sessionId is required" });
-    return;
-  }
-
+  const sessionId = (req.query.sessionId as string) || "default";
   clearHistory(sessionId, agentId);
   res.json({ success: true, message: "Conversation cleared" });
 });
