@@ -1,0 +1,157 @@
+You are a senior full-stack engineer, game developer, and AI systems architect.
+
+Build a web-based 3D virtual startup office simulation where the user acts as the Founder/CEO and manages a team of AI agents (employees) in a visually interactive environment.
+
+## 🎯 CORE CONCEPT
+The product is a “Living AI Startup Office” where:
+- The Founder logs into a dashboard
+- Sees a 3D office environment (top-down or isometric view)
+- AI employees (agents) are represented as animated characters
+- Each agent has a role (CTO, CFO, Marketer, Analyst, Support, etc.)
+- Agents move, sit, collaborate, and simulate working behavior
+- Founder can click on any agent to interact via chat (Claude-powered)
+
+---
+
+## 🧩 CORE FEATURES
+
+### 1. 3D OFFICE ENVIRONMENT
+- Use Three.js or React Three Fiber
+- Office layout includes:
+  - CEO Cabin
+  - Workstations
+  - Meeting Room
+  - Cafeteria
+  - Lounge Area
+- Camera: top-down / isometric view
+- Smooth panning + zoom
+- Real-time rendering
+
+---
+
+### 2. AI AGENT SYSTEM
+Each employee is an AI agent with:
+- Name, Role, Avatar
+- Personality + system prompt
+- Task memory
+- Status (idle, working, thinking, meeting)
+
+Agent Roles:
+- CTO (technical decisions)
+- CFO (finance + pricing)
+- Marketing Head
+- Product Manager
+- Analyst
+- Support Agent
+
+Agents should:
+- Walk randomly or based on tasks
+- Sit at desks or move to meeting rooms
+- Show visual states (thinking, typing, idle)
+
+---
+
+### 3. INTERACTION SYSTEM
+- Clicking an agent opens a chat panel
+- Founder can:
+  - Ask questions
+  - Assign tasks
+  - Get updates
+
+Each agent responds using Claude API:
+- Maintain conversation memory per agent
+- Use role-based system prompts
+
+---
+
+### 4. CLAUDE API INTEGRATION (MULTI-TENANT)
+- Each user (founder) must add their own Claude API key
+- Store API key securely (encrypted)
+- Backend routes requests per user
+
+Flow:
+1. User signs up
+2. Enters Claude API key
+3. Key is validated
+4. All agent responses use that key
+
+---
+
+### 5. BACKEND ARCHITECTURE
+- Node.js / FastAPI backend
+- Multi-tenant system (each founder isolated)
+- Store:
+  - Users
+  - Agents
+  - Conversations
+  - Office state
+
+---
+
+### 6. AGENT BEHAVIOR ENGINE
+- Simple simulation loop:
+  - Assign random or task-based movement
+  - State machine:
+    idle → walking → working → meeting
+
+- Future-ready for:
+  - Task execution
+  - Multi-agent collaboration
+
+---
+
+### 7. UI/UX
+- Clean dashboard
+- 3D canvas main view
+- Sidebar:
+  - Agent list
+  - Tasks
+- Chat modal on agent click
+
+---
+
+## ⚙️ TECH STACK
+Frontend:
+- React + Tailwind
+- React Three Fiber
+
+Backend:
+- Node.js / FastAPI
+- MongoDB
+
+AI:
+- Claude API (Anthropic)
+
+---
+
+## 🔐 SECURITY
+- Encrypt API keys
+- Never expose keys in frontend
+- Use server-side API calls
+
+---
+
+## 🚀 MVP GOAL
+- 1 office
+- 3–5 agents
+- Click-to-chat working
+- Basic movement animation
+
+---
+
+## 🔮 FUTURE EXTENSIONS
+- Multi-agent collaboration
+- Voice interaction
+- Task automation
+- Real business integrations
+
+---
+
+## OUTPUT
+Generate:
+1. Project folder structure
+2. Backend + frontend starter code
+3. 3D scene setup
+4. Agent system logic
+5. Claude API integration
+6. Step-by-step run instructions

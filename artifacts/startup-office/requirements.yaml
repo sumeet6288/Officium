@@ -1,0 +1,17 @@
+packages:
+  "framer-motion": "For smooth slide-over panels, chat modals, and UI micro-interactions"
+  "uuid": "For generating unique session IDs for multi-tenant chat isolation"
+  "@types/uuid": "Types for uuid package"
+  "clsx": "Utility for constructing className strings conditionally"
+  "tailwind-merge": "Utility to merge tailwind classes without style conflicts"
+  "date-fns": "For formatting chat timestamps"
+
+images:
+  - path: "artifacts/startup-office/public/images/setup-bg.png"
+    description: "Sleek, dark abstract geometric background with subtle glowing neon purple and blue grid lines, conveying a modern high-tech AI startup vibe"
+    aspect_ratio: "16:9"
+
+notes:
+  - The app uses generated orval hooks from `@workspace/api-client-react`.
+  - The 3D scene uses React Three Fiber and Drei.
+  - Client generates a local `sessionId` to isolate chat histories.

@@ -1,8 +1,14 @@
 import { Router, type IRouter } from "express";
 import healthRouter from "./health";
+import authRouter from "./auth";
+import agentsRouter from "./agents";
+import chatRouter from "./chat";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use("/auth", authRouter);
+router.use("/agents", agentsRouter);
+router.use("/chat", chatRouter);
 
 export default router;

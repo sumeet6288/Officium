@@ -1,15 +1,20 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Living AI Startup Office API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: agents
+    description: AI Agent operations
+  - name: chat
+    description: Chat operations
 paths:
   /healthz:
     get:
@@ -24,6 +29,148 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /auth/setup:
+    post:
+      operationId: setupApiKey
+      tags: [auth]
+      summary: Setup Claude API key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetupApiKeyRequest"
+      responses:
+        "200":
+          description: API key configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupApiKeyResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/status:
+    get:
+      operationId: getAuthStatus
+      tags: [auth]
+      summary: Check if API key is configured
+      responses:
+        "200":
+          description: Auth status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthStatusResponse"
+  /agents:
+    get:
+      operationId: getAgents
+      tags: [agents]
+      summary: Get all agents
+      responses:
+        "200":
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Agent"
+  /agents/{agentId}/state:
+    patch:
+      operationId: updateAgentState
+      tags: [agents]
+      summary: Update agent state
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAgentStateRequest"
+      responses:
+        "200":
+          description: Updated agent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agent"
+  /chat/{agentId}:
+    post:
+      operationId: sendMessage
+      tags: [chat]
+      summary: Send message to agent
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendMessageRequest"
+      responses:
+        "200":
+          description: Agent response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatMessage"
+        "400":
+          description: No API key configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    get:
+      operationId: getChatHistory
+      tags: [chat]
+      summary: Get conversation history with agent
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Chat history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatMessage"
+  /chat/{agentId}/clear:
+    delete:
+      operationId: clearChatHistory
+      tags: [chat]
+      summary: Clear conversation history with agent
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: History cleared
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -33,4 +180,138 @@ components:
           type: string
       required:
         - status
-
+    SetupApiKeyRequest:
+      type: object
+      properties:
+        apiKey:
+          type: string
+          description: Anthropic Claude API key
+        sessionId:
+          type: string
+          description: Session identifier for multi-tenant isolation
+      required:
+        - apiKey
+        - sessionId
+    SetupApiKeyResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        sessionId:
+          type: string
+      required:
+        - success
+        - message
+        - sessionId
+    AuthStatusResponse:
+      type: object
+      properties:
+        configured:
+          type: boolean
+        sessionId:
+          type: string
+      required:
+        - configured
+    Agent:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+        emoji:
+          type: string
+        status:
+          type: string
+          enum: [idle, walking, working, meeting, thinking]
+        personality:
+          type: string
+        position:
+          $ref: "#/components/schemas/Position"
+        color:
+          type: string
+      required:
+        - id
+        - name
+        - role
+        - emoji
+        - status
+        - personality
+        - position
+        - color
+    Position:
+      type: object
+      properties:
+        x:
+          type: number
+        z:
+          type: number
+      required:
+        - x
+        - z
+    UpdateAgentStateRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [idle, walking, working, meeting, thinking]
+        position:
+          $ref: "#/components/schemas/Position"
+    SendMessageRequest:
+      type: object
+      properties:
+        message:
+          type: string
+        sessionId:
+          type: string
+      required:
+        - message
+        - sessionId
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: string
+        agentId:
+          type: string
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+        timestamp:
+          type: string
+      required:
+        - id
+        - agentId
+        - role
+        - content
+        - timestamp
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+        - message
+    UpdateAgentStateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+        - success
