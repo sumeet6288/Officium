@@ -84,6 +84,7 @@ export function OfficeScene({ agents, selectedAgentId, onAgentClick }: OfficeSce
             <Agent3D
               key={agent.id}
               agent={agent}
+              agents={agents}
               selected={selectedAgentId === agent.id}
               onClick={onAgentClick}
             />
