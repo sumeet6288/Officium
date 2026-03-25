@@ -34,25 +34,25 @@ export function OfficeScene({ agents, selectedAgentId, onAgentClick }: OfficeSce
   )
 
   return (
-    <div className="w-full h-full absolute inset-0 bg-[#09090b]">
+    <div className="w-full h-full absolute inset-0 bg-[#e8e0d5]">
       <WebGLErrorBoundary fallback={fallback}>
         <Canvas
           shadows="soft"
           camera={{ position: [28, 22, 28], fov: 45, near: 0.1, far: 200 }}
           gl={{ antialias: true, alpha: false }}
         >
-          <color attach="background" args={['#09090b']} />
-          <fog attach="fog" args={['#09090b', 45, 90]} />
+          <color attach="background" args={['#ddd5c8']} />
+          <fog attach="fog" args={['#ddd5c8', 50, 95]} />
 
-          {/* Sky for ambient light tone */}
+          {/* Sky */}
           <Sky distance={450} sunPosition={[5, 1, 8]} inclination={0} azimuth={0.25} />
 
-          {/* Primary directional (sun) light */}
+          {/* Primary sun light */}
           <directionalLight
             castShadow
             position={[15, 25, 15]}
-            intensity={1.2}
-            color="#e0e7ff"
+            intensity={2.0}
+            color="#fff7ed"
             shadow-mapSize={[2048, 2048]}
             shadow-camera-left={-30}
             shadow-camera-right={30}
@@ -63,11 +63,11 @@ export function OfficeScene({ agents, selectedAgentId, onAgentClick }: OfficeSce
             shadow-bias={-0.001}
           />
 
-          {/* Soft fill from opposite direction */}
-          <directionalLight position={[-10, 12, -10]} intensity={0.4} color="#c7d2fe" />
+          {/* Soft fill */}
+          <directionalLight position={[-10, 12, -10]} intensity={0.8} color="#fef9c3" />
 
           {/* Warm ambient */}
-          <ambientLight intensity={0.35} color="#1e1b4b" />
+          <ambientLight intensity={0.9} color="#fef3c7" />
 
           <OfficeEnvironment />
 
