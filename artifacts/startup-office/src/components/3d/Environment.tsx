@@ -294,16 +294,19 @@ function Door({ pos, rot = 0, open = false }: { pos: [number, number, number]; r
 }
 
 /* ─── Wall with windows ─── */
-function WallWithWindows({ pos, size, rot = 0, windowPositions = [] }: {
-  pos: [number, number, number]; size: [number, number, number]; rot?: number; windowPositions?: number[]
+// windowAxis='x' → windows spaced along X (front/back walls)
+// windowAxis='z' → windows spaced along Z (side/left/right walls)
+function WallWithWindows({ pos, size, windowPositions = [], windowAxis = 'x' }: {
+  pos: [number, number, number]; size: [number, number, number]
+  windowPositions?: number[]; windowAxis?: 'x' | 'z'
 }) {
   return (
-    <group position={pos} rotation={[0, rot, 0]}>
+    <group position={pos}>
       <Box pos={[0, 0, 0]} size={size} color="#ede8de" roughness={0.85} castShadow receiveShadow />
-      {windowPositions.map((wx, i) => (
-        <mesh key={i} position={[wx, 0.5, 0.05]}>
-          <boxGeometry args={[1.8, 2.0, 0.15]} />
-          <meshStandardMaterial color="#bae6fd" transparent opacity={0.2} roughness={0} />
+      {windowPositions.map((w, i) => (
+        <mesh key={i} position={windowAxis === 'x' ? [w, 0.5, 0.05] : [0.05, 0.5, w]}>
+          <boxGeometry args={windowAxis === 'x' ? [1.8, 2.0, 0.2] : [0.2, 2.0, 1.8]} />
+          <meshStandardMaterial color="#bae6fd" transparent opacity={0.22} roughness={0} />
         </mesh>
       ))}
     </group>
@@ -338,38 +341,66 @@ export function OfficeEnvironment() {
       <Rug pos={[ 13, 0.05, 12]}  size={[11, 10]} color="#c4f0d4" />   {/* Lounge – mint green */}
       <Rug pos={[  0, 0.05, 14]}  size={[ 8,  6]} color="#fde8c4" />   {/* Reception – warm yellow */}
 
-      {/* ── Exterior Walls – warm off-white ── */}
-      <WallWithWindows pos={[0, 1.5, -21]} size={[42, 4, 0.4]} windowPositions={[-15, -5, 5, 15]} />
-      <WallWithWindows pos={[-21, 1.5, 0]} size={[0.4, 4, 42]} rot={Math.PI / 2} windowPositions={[-12, -4, 4, 12]} />
-      <WallWithWindows pos={[21,  1.5, 0]} size={[0.4, 4, 42]} rot={Math.PI / 2} windowPositions={[-12, -4, 4, 12]} />
-      <WallWithWindows pos={[0, 1.5,  21]} size={[42, 4, 0.4]} windowPositions={[-10, 0, 10]} />
+      {/* ── Exterior Walls ──
+           The office occupies x: [-21, +21], z: [-21, +21].
+           North/South walls run along X (horizontal).
+           East/West walls run along Z (vertical) – NO rotation needed.
+           Corners: N/S walls are 42.8 wide to fully cover the corners;
+           E/W walls are 41.2 long to fit snugly between the inner wall faces. */}
 
-      {/* ── Interior Partition Walls ── */}
-      <Box pos={[-7.5, 1.5, -10.5]} size={[0.2, 3, 5]}  color="#e0d8cc" roughness={0.8} castShadow />
-      <Box pos={[-13.5, 1.5, -8]}   size={[7, 3, 0.2]}  color="#e0d8cc" roughness={0.8} castShadow />
-      <Box pos={[-5, 1.5, 4]}       size={[0.2, 3, 10]} color="#e0d8cc" roughness={0.7} castShadow />
-      <Box pos={[-11, 1.5, 4]}      size={[12, 3, 0.2]} color="#e0d8cc" roughness={0.7} castShadow />
-      {/* Glass meeting-room front */}
-      <mesh position={[-11, 1.5, 14.5]}>
-        <boxGeometry args={[12, 3, 0.1]} />
-        <meshStandardMaterial color="#bae6fd" transparent opacity={0.15} roughness={0} />
+      {/* North wall (back) — z = -21, runs E-W */}
+      <WallWithWindows pos={[0, 1.75, -21]}  size={[42.8, 3.5, 0.4]}
+        windowPositions={[-14, -4, 6, 16]} windowAxis='x' />
+
+      {/* South wall (front) — z = +21, runs E-W */}
+      <WallWithWindows pos={[0, 1.75, 21]}   size={[42.8, 3.5, 0.4]}
+        windowPositions={[-10, 0, 12]} windowAxis='x' />
+
+      {/* West wall (left) — x = -21, runs N-S (no rotation!) */}
+      <WallWithWindows pos={[-21, 1.75, 0]}  size={[0.4, 3.5, 41.2]}
+        windowPositions={[-14, -2, 10]} windowAxis='z' />
+
+      {/* East wall (right) — x = +21, runs N-S (no rotation!) */}
+      <WallWithWindows pos={[21, 1.75, 0]}   size={[0.4, 3.5, 41.2]}
+        windowPositions={[-14, 0, 14]} windowAxis='z' />
+
+      {/* ── Interior Partition Walls ──
+           CEO Cabin occupies x: [-21, -7.5], z: [-21, -8]
+           Meeting Room occupies x: [-17.5, -5], z: [4, 16]         */}
+
+      {/* CEO cabin — east wall (x = -7.5, runs N-S) split around door at z = -13.5 */}
+      {/* North segment: z = -20.8 → -14.5 */}
+      <Box pos={[-7.5, 1.75, -17.65]} size={[0.2, 3.5, 6.3]}  color="#e0d8cc" roughness={0.8} castShadow />
+      {/* South segment: z = -12.5 → -8.4 */}
+      <Box pos={[-7.5, 1.75, -10.45]} size={[0.2, 3.5, 4.1]}  color="#e0d8cc" roughness={0.8} castShadow />
+
+      {/* CEO cabin — south wall (z = -8, runs E-W) */}
+      {/* x = -20.8 → -7.5 */}
+      <Box pos={[-14.15, 1.75, -8]} size={[13.3, 3.5, 0.2]} color="#e0d8cc" roughness={0.8} castShadow />
+
+      {/* Meeting room — north wall (z = 4, runs E-W) */}
+      {/* x = -17.5 → -5.2 */}
+      <Box pos={[-11.35, 1.75, 4]} size={[12.3, 3.5, 0.2]} color="#e0d8cc" roughness={0.7} castShadow />
+
+      {/* Meeting room — east wall (x = -5, runs N-S) split around door at z = 8 */}
+      {/* North segment: z = 4 → 7 */}
+      <Box pos={[-5, 1.75, 5.5]}  size={[0.2, 3.5, 3.0]} color="#e0d8cc" roughness={0.7} castShadow />
+      {/* South segment: z = 9 → 16 */}
+      <Box pos={[-5, 1.75, 12.5]} size={[0.2, 3.5, 7.0]} color="#e0d8cc" roughness={0.7} castShadow />
+
+      {/* Meeting room — glass south wall (z = 16, runs E-W) */}
+      <mesh position={[-11.35, 1.75, 16]}>
+        <boxGeometry args={[12.3, 3.5, 0.12]} />
+        <meshStandardMaterial color="#bae6fd" transparent opacity={0.18} roughness={0} metalness={0.05} />
       </mesh>
 
-      {/* ── Windows ── */}
-      <Window pos={[-21, 1.8, -14]} rot={Math.PI / 2} />
-      <Window pos={[-21, 1.8,  -4]} rot={Math.PI / 2} />
-      <Window pos={[-21, 1.8,   6]} rot={Math.PI / 2} />
-      <Window pos={[ 21, 1.8, -14]} rot={-Math.PI / 2} />
-      <Window pos={[ 21, 1.8,   0]} rot={-Math.PI / 2} />
-      <Window pos={[ 21, 1.8,  12]} rot={-Math.PI / 2} />
-      <Window pos={[-10, 1.8, -21]} />
-      <Window pos={[  0, 1.8, -21]} />
-      <Window pos={[ 10, 1.8, -21]} />
-
       {/* ── Doors ── */}
+      {/* CEO cabin door in east wall at z = -13.5 */}
       <Door pos={[-7.5, 0, -13.5]} rot={Math.PI / 2} open />
-      <Door pos={[-5,   0,   8]}   rot={Math.PI / 2} open />
-      <Door pos={[ 4,   0,  21]}   rot={0}           open />
+      {/* Meeting room door in east wall at z = 8 */}
+      <Door pos={[-5,   0,  8]}    rot={Math.PI / 2} open />
+      {/* Main entrance in south wall */}
+      <Door pos={[ 4,   0, 21]}    rot={0}           open />
 
       {/* ── Zone fill lights ── */}
       <pointLight position={[-13, 2.5, -13]} intensity={2.0} color="#fff7ed" distance={12} decay={2} />

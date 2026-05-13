@@ -37,7 +37,7 @@ export function OfficeScene({ agents, selectedAgentId, onAgentClick }: OfficeSce
     <div className="w-full h-full absolute inset-0 bg-[#e8e0d5]">
       <WebGLErrorBoundary fallback={fallback}>
         <Canvas
-          shadows="soft"
+          shadows
           camera={{ position: [28, 22, 28], fov: 45, near: 0.1, far: 200 }}
           gl={{ antialias: true, alpha: false }}
         >
