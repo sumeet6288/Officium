@@ -776,10 +776,6 @@ export function OfficeEnvironment() {
         </group>
       ))}
 
-      {/* ── Ceiling zone accent panels (visible top trim on walls) ── */}
-      <Box pos={[-13, 3.45, -13]} size={[9, 0.1, 8]} color="#f5c4a4" roughness={0.9} />
-      <Box pos={[-11, 3.45,  9]} size={[10, 0.1, 9]} color="#c4dff5" roughness={0.9} />
-      <Box pos={[ 13, 3.45, 12]} size={[11, 0.1, 10]} color="#c4f0d4" roughness={0.9} />
     </group>
   )
 }
