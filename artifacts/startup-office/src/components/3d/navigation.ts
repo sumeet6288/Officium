@@ -27,17 +27,12 @@ export function isWalkable(x: number, z: number): boolean {
 
 /* ─── Furniture obstacle rectangles (impassable blocks inside walkable zones) ─── */
 export const OBSTACLE_RECTS: NavRect[] = [
-  // ── Workstation desk bodies ──
-  // Front desk rows at z≈-13 (rot=π → desk surface faces south, body at z:-14 to -13)
-  { xMin: -7.0, xMax: -0.5, zMin: -14.1, zMax: -12.9 },
-  { xMin:  0.5, xMax:  5.5, zMin: -14.1, zMax: -12.9 },
-  { xMin:  7.5, xMax: 13.0, zMin: -14.1, zMax: -12.9 },
-  // Back desk rows/standalone desks at z≈-8 (desk body at z:-8.6 to -7.5)
-  { xMin: -7.0, xMax: -0.5, zMin: -8.6, zMax: -7.4 },
-  { xMin:  0.5, xMax:  5.5, zMin: -8.6, zMax: -7.4 },
-  { xMin:  1.5, xMax:  4.5, zMin: -8.6, zMax: -7.4 },
-  { xMin:  8.5, xMax: 11.5, zMin: -8.6, zMax: -7.4 },
-  { xMin: 14.5, xMax: 17.5, zMin: -8.6, zMax: -7.4 },
+  // ── Front desk row bodies only (south-facing desks at z≈-13 to -14) ──
+  // zMax=-13.4 keeps a safe gap above seats at z=-12.7 so agents can return freely
+  { xMin: -6.5, xMax: -0.8, zMin: -14.2, zMax: -13.4 },
+  { xMin:  0.8, xMax:  5.2, zMin: -14.2, zMax: -13.4 },
+  { xMin:  7.8, xMax: 12.8, zMin: -14.2, zMax: -13.4 },
+  // NOTE: back desk row obstacles removed — they span agents' only north exit corridor
 
   // ── Meeting room table ── (chairs at x=-14.5,-7.5 and z=6.5,11.5 are outside)
   { xMin: -13.8, xMax: -8.2, zMin: 7.5, zMax: 11.0 },
