@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Send, Trash2, Bot, User, Loader2 } from 'lucide-react'
+import { X, Send, Trash2, Bot, User, Loader2, Brain } from 'lucide-react'
 import { GlassPanel } from './GlassPanel'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
@@ -109,13 +109,23 @@ export function ChatPanel({ agent, sessionId, onClose }: ChatPanelProps) {
               </div>
             </div>
             <div className="flex items-center gap-1">
+              {messages.length > 0 && (
+                <div
+                  className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium"
+                  style={{ backgroundColor: `${agent.color}22`, color: agent.color }}
+                  title={`${agent.name} remembers ${messages.length} messages from this session`}
+                >
+                  <Brain className="w-3 h-3" />
+                  <span>{messages.length} in memory</span>
+                </div>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-muted-foreground hover:text-destructive"
                 onClick={() => clearHistory()}
                 disabled={isClearing || messages.length === 0}
-                title="Clear Chat"
+                title="Clear Chat Memory"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>

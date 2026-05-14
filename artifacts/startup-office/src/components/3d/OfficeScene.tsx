@@ -1,6 +1,7 @@
 import { Component, type ReactNode } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, ContactShadows, Sky } from '@react-three/drei'
+import * as THREE from 'three'
 import { OfficeEnvironment } from './Environment'
 import { Agent3D } from './Agent'
 import type { Agent } from '@workspace/api-client-react'
@@ -40,6 +41,7 @@ export function OfficeScene({ agents, selectedAgentId, onAgentClick }: OfficeSce
           shadows
           camera={{ position: [28, 22, 28], fov: 45, near: 0.1, far: 200 }}
           gl={{ antialias: true, alpha: false }}
+          onCreated={({ gl }) => { gl.shadowMap.type = THREE.PCFShadowMap }}
         >
           <color attach="background" args={['#ddd5c8']} />
           <fog attach="fog" args={['#ddd5c8', 50, 95]} />

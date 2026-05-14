@@ -313,6 +313,198 @@ function WallWithWindows({ pos, size, windowPositions = [], windowAxis = 'x' }: 
   )
 }
 
+/* ─── Server Rack ─── */
+function ServerRack({ pos, rot = 0 }: { pos: [number, number, number]; rot?: number }) {
+  const ledColors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#22c55e', '#3b82f6']
+  return (
+    <group position={pos} rotation={[0, rot, 0]}>
+      <Box pos={[0, 1.0, 0]} size={[0.7, 2.0, 0.55]} color="#1f2937" roughness={0.3} metalness={0.6} castShadow receiveShadow />
+      <Box pos={[0, 1.0, 0.28]} size={[0.65, 1.95, 0.02]} color="#111827" roughness={0.2} metalness={0.4} />
+      {[0.6, 0.3, 0.0, -0.3, -0.6, -0.9].map((y, i) => (
+        <group key={i} position={[0, 1.0 + y, 0.29]}>
+          <mesh position={[0, 0, 0]}><boxGeometry args={[0.6, 0.18, 0.01]} /><meshStandardMaterial color="#0f172a" roughness={0.3} /></mesh>
+          <mesh position={[-0.22, 0, 0.006]}><boxGeometry args={[0.06, 0.06, 0.01]} /><meshStandardMaterial emissive={ledColors[i]} emissiveIntensity={2} color={ledColors[i]} /></mesh>
+          <mesh position={[-0.1, 0, 0.006]}><boxGeometry args={[0.04, 0.04, 0.01]} /><meshStandardMaterial emissive="#3b82f6" emissiveIntensity={1.5} color="#3b82f6" /></mesh>
+          {[-0.05, 0, 0.05, 0.1, 0.15].map((bx, bi) => (
+            <mesh key={bi} position={[bx, 0, 0.006]}><boxGeometry args={[0.025, 0.025, 0.01]} /><meshStandardMaterial emissive="#22c55e" emissiveIntensity={i % 2 === 0 ? 2 : 0.2} color="#22c55e" /></mesh>
+          ))}
+        </group>
+      ))}
+      <pointLight position={[0, 1.0, 0.4]} intensity={0.4} color="#22c55e" distance={2} decay={2} />
+    </group>
+  )
+}
+
+/* ─── Phone Booth / Focus Pod ─── */
+function PhoneBooth({ pos }: { pos: [number, number, number] }) {
+  return (
+    <group position={pos}>
+      {/* Floor pad */}
+      <mesh position={[0, 0.01, 0]} rotation={[-Math.PI/2, 0, 0]}><planeGeometry args={[1.8, 2.0]} /><meshStandardMaterial color="#e8ddd0" roughness={0.9} /></mesh>
+      {/* Walls – glass panels */}
+      {[[-0.9, 0, 0, 0], [0.9, 0, 0, Math.PI], [0, 0, -1.0, Math.PI/2]].map(([x, y, z, r], i) => (
+        <mesh key={i} position={[x as number, 1.5, z as number]} rotation={[0, r as number, 0]}>
+          <boxGeometry args={[0.05, 3.0, 2.0]} />
+          <meshStandardMaterial color="#bae6fd" transparent opacity={0.22} roughness={0} metalness={0.05} />
+        </mesh>
+      ))}
+      {/* Frame posts */}
+      {[[-0.9, -1.0], [-0.9, 1.0], [0.9, -1.0], [0.9, 1.0]].map(([x, z], i) => (
+        <Box key={i} pos={[x, 1.5, z]} size={[0.06, 3.0, 0.06]} color="#d1c9be" roughness={0.3} metalness={0.3} />
+      ))}
+      {/* Top bar */}
+      <Box pos={[0, 3.0, 0]} size={[1.86, 0.06, 2.06]} color="#d1c9be" roughness={0.3} metalness={0.3} />
+      {/* Inside: stool + shelf */}
+      <group position={[0.3, 0, 0.2]}>
+        <Box pos={[0, 0.55, 0]} size={[0.35, 0.05, 0.35]} color="#f59e0b" roughness={0.7} castShadow />
+        <Box pos={[0, 0.3, 0]} size={[0.05, 0.55, 0.05]} color="#9ca3af" roughness={0.4} metalness={0.5} castShadow />
+      </group>
+      <Box pos={[-0.3, 1.0, -0.9]} size={[0.8, 0.04, 0.3]} color="#c4956a" roughness={0.4} />
+      {/* Glowing accent strip */}
+      <mesh position={[0, 0.05, 0]} rotation={[-Math.PI/2, 0, 0]}>
+        <planeGeometry args={[1.7, 1.9]} />
+        <meshStandardMaterial emissive="#7c3aed" emissiveIntensity={0.15} color="#7c3aed" transparent opacity={0.3} />
+      </mesh>
+      <pointLight position={[0, 2.5, 0]} intensity={0.8} color="#c4b5fd" distance={3} decay={2} />
+    </group>
+  )
+}
+
+/* ─── Neon Sign ─── */
+function NeonSign({ pos, rot = 0, text = 'BUILD · SHIP · REPEAT', color = '#f59e0b' }: {
+  pos: [number, number, number]; rot?: number; text?: string; color?: string
+}) {
+  return (
+    <group position={pos} rotation={[0, rot, 0]}>
+      <Box pos={[0, 0, -0.04]} size={[3.2, 0.55, 0.06]} color="#1f2937" roughness={0.3} metalness={0.4} />
+      <mesh position={[0, 0, 0]}>
+        <boxGeometry args={[3.0, 0.4, 0.04]} />
+        <meshStandardMaterial emissive={color} emissiveIntensity={1.8} color={color} transparent opacity={0.9} roughness={0} />
+      </mesh>
+      <pointLight position={[0, 0, 0.3]} intensity={1.2} color={color} distance={5} decay={2} />
+    </group>
+  )
+}
+
+/* ─── Ping Pong Table ─── */
+function PingPongTable({ pos, rot = 0 }: { pos: [number, number, number]; rot?: number }) {
+  return (
+    <group position={pos} rotation={[0, rot, 0]}>
+      {/* Table halves */}
+      <Box pos={[-0.76, 0.76, 0]} size={[1.52, 0.05, 1.37]} color="#16a34a" roughness={0.6} castShadow receiveShadow />
+      <Box pos={[ 0.76, 0.76, 0]} size={[1.52, 0.05, 1.37]} color="#16a34a" roughness={0.6} castShadow receiveShadow />
+      {/* White lines */}
+      <Box pos={[0, 0.79, 0]} size={[3.06, 0.01, 0.04]} color="#ffffff" roughness={0.5} />
+      <Box pos={[0, 0.79, 0]} size={[0.04, 0.01, 1.37]} color="#ffffff" roughness={0.5} />
+      {[-0.6, 0.6].map((x, i) => <Box key={i} pos={[x, 0.79, 0]} size={[0.04, 0.01, 1.37]} color="#ffffff" roughness={0.5} />)}
+      {/* Net */}
+      <Box pos={[0, 0.92, 0]} size={[0.04, 0.28, 1.4]} color="#e5e7eb" roughness={0.8} />
+      <Box pos={[-1.53, 0.87, 0]} size={[0.06, 0.22, 1.4]} color="#374151" roughness={0.4} metalness={0.3} />
+      <Box pos={[ 1.53, 0.87, 0]} size={[0.06, 0.22, 1.4]} color="#374151" roughness={0.4} metalness={0.3} />
+      {/* Legs */}
+      {[[-1.4, 0.55], [1.4, 0.55], [-1.4, -0.55], [1.4, -0.55]].map(([x, z], i) => (
+        <Box key={i} pos={[x, 0.37, z]} size={[0.05, 0.74, 0.05]} color="#374151" roughness={0.3} metalness={0.5} castShadow />
+      ))}
+      {/* Paddles & ball */}
+      <mesh position={[-1.0, 0.79, 0.3]}><boxGeometry args={[0.18, 0.01, 0.22]} /><meshStandardMaterial color="#e07b54" roughness={0.7} /></mesh>
+      <mesh position={[1.0, 0.79, -0.2]}><boxGeometry args={[0.18, 0.01, 0.22]} /><meshStandardMaterial color="#4a90d9" roughness={0.7} /></mesh>
+      <mesh position={[0.2, 0.82, 0.1]}><sphereGeometry args={[0.03, 8, 8]} /><meshStandardMaterial color="#f5f0e8" roughness={0.5} /></mesh>
+    </group>
+  )
+}
+
+/* ─── Aquarium ─── */
+function Aquarium({ pos }: { pos: [number, number, number] }) {
+  return (
+    <group position={pos}>
+      {/* Cabinet base */}
+      <Box pos={[0, 0.4, 0]} size={[1.6, 0.8, 0.55]} color="#c4956a" roughness={0.5} castShadow receiveShadow />
+      {/* Glass tank */}
+      <mesh position={[0, 1.25, 0]}>
+        <boxGeometry args={[1.55, 0.85, 0.5]} />
+        <meshStandardMaterial color="#7dd3fc" transparent opacity={0.18} roughness={0} metalness={0.05} />
+      </mesh>
+      {/* Water surface */}
+      <mesh position={[0, 1.66, 0]}><boxGeometry args={[1.5, 0.02, 0.45]} /><meshStandardMaterial color="#0ea5e9" transparent opacity={0.4} roughness={0} /></mesh>
+      {/* Sand */}
+      <mesh position={[0, 0.83, 0]}><boxGeometry args={[1.5, 0.05, 0.45]} /><meshStandardMaterial color="#d4a85a" roughness={1} /></mesh>
+      {/* Coral & plants */}
+      {[-0.4, 0, 0.4].map((x, i) => (
+        <mesh key={i} position={[x, 1.0, 0]}>
+          <cylinderGeometry args={[0.04, 0.06, 0.3 + i * 0.1, 8]} />
+          <meshStandardMaterial color={['#e07b54','#22c55e','#e879a8'][i]} roughness={0.8} />
+        </mesh>
+      ))}
+      {/* Fish */}
+      {[[-0.3, 1.2, 0], [0.2, 1.35, 0], [-0.1, 1.15, 0]].map(([x, y, z], i) => (
+        <mesh key={i} position={[x, y, z]}>
+          <sphereGeometry args={[0.04, 6, 4]} />
+          <meshStandardMaterial color={['#f59e0b','#e07b54','#818cf8'][i]} emissive={['#f59e0b','#e07b54','#818cf8'][i]} emissiveIntensity={0.5} roughness={0.6} />
+        </mesh>
+      ))}
+      <pointLight position={[0, 1.6, 0]} intensity={0.8} color="#7dd3fc" distance={3} decay={2} />
+    </group>
+  )
+}
+
+/* ─── Lounge TV / Dashboard Screen ─── */
+function LoungeTV({ pos, rot = 0 }: { pos: [number, number, number]; rot?: number }) {
+  return (
+    <group position={pos} rotation={[0, rot, 0]}>
+      <Box pos={[0, 0, 0]} size={[2.8, 1.6, 0.08]} color="#111827" roughness={0.2} metalness={0.5} castShadow />
+      <mesh position={[0, 0, 0.045]}>
+        <boxGeometry args={[2.65, 1.48, 0.01]} />
+        <meshStandardMaterial color="#0d1b2a" emissive="#0f172a" emissiveIntensity={0.5} roughness={0} />
+      </mesh>
+      {/* Dashboard charts */}
+      {[[-0.6, 0.3], [0.6, 0.3], [-0.6, -0.3], [0.6, -0.3]].map(([x, y], i) => (
+        <mesh key={i} position={[x, y, 0.052]}>
+          <boxGeometry args={[0.9, 0.5, 0.001]} />
+          <meshStandardMaterial emissive={['#4f46e5','#059669','#d97706','#e07b54'][i]} emissiveIntensity={0.8} transparent opacity={0.7} />
+        </mesh>
+      ))}
+      {[0.3, 0.1, -0.1, -0.3].map((y, i) => (
+        <mesh key={i} position={[0, y, 0.052]}>
+          <boxGeometry args={[0.6, 0.05, 0.001]} />
+          <meshStandardMaterial emissive="#818cf8" emissiveIntensity={0.9} />
+        </mesh>
+      ))}
+      <Box pos={[0, -0.82, 0]} size={[0.15, 0.06, 0.12]} color="#1f2937" roughness={0.3} metalness={0.5} />
+      <Box pos={[0, -1.08, 0]} size={[0.5, 0.04, 0.3]} color="#374151" roughness={0.3} metalness={0.4} />
+      <pointLight position={[0, 0, 0.5]} intensity={0.5} color="#818cf8" distance={4} decay={2} />
+    </group>
+  )
+}
+
+/* ─── Wall Art Panel ─── */
+function WallArt({ pos, rot = 0, colors }: { pos: [number, number, number]; rot?: number; colors: string[] }) {
+  return (
+    <group position={pos} rotation={[0, rot, 0]}>
+      <Box pos={[0, 0, -0.04]} size={[1.4, 1.0, 0.06]} color="#e8e2d6" roughness={0.5} />
+      {colors.map((c, i) => (
+        <mesh key={i} position={[-0.5 + i * (1.0 / colors.length) + 0.5 / colors.length - 0.5 + 0.1, 0, 0]}>
+          <boxGeometry args={[0.85 / colors.length, 0.82, 0.01]} />
+          <meshStandardMaterial color={c} roughness={0.7} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
+/* ─── Standing Desk ─── */
+function StandingDesk({ pos, rot = 0, color = '#c4956a' }: { pos: [number,number,number]; rot?: number; color?: string }) {
+  return (
+    <group position={pos} rotation={[0, rot, 0]}>
+      <Box pos={[0, 1.05, 0]} size={[1.6, 0.05, 0.75]} color={color} roughness={0.4} castShadow receiveShadow />
+      {[[-0.7, 0.38], [0.7, 0.38], [-0.7, -0.32], [0.7, -0.32]].map(([x, z], i) => (
+        <Box key={i} pos={[x, 0.52, z]} size={[0.05, 1.04, 0.05]} color="#9ca3af" roughness={0.3} metalness={0.6} castShadow />
+      ))}
+      <Monitor pos={[0, 1.08, -0.15]} rot={Math.PI} />
+      <Box pos={[0.45, 1.09, 0.1]} size={[0.25, 0.02, 0.2]} color="#f5f0e8" roughness={0.2} />
+    </group>
+  )
+}
+
 /* ─── Rug ─── */
 function Rug({ pos, size, color }: { pos: [number, number, number]; size: [number, number]; color: string }) {
   return (
@@ -506,6 +698,88 @@ export function OfficeEnvironment() {
       <Plant pos={[ 20, 0, -20]} scale={1.2} />
       <Plant pos={[-20, 0,  20]} scale={1.3} />
       <Plant pos={[ 20, 0,  20]} scale={1.4} />
+
+      {/* ── SERVER ROOM (NE corner, behind workstations) ── */}
+      {/* Partition wall separating server area from workstations */}
+      <Box pos={[13.5, 1.75, -8.2]} size={[15, 3.5, 0.2]} color="#e0d8cc" roughness={0.8} castShadow />
+      {/* Server racks row */}
+      <ServerRack pos={[15, 0, -14]} rot={Math.PI} />
+      <ServerRack pos={[17, 0, -14]} rot={Math.PI} />
+      <ServerRack pos={[19, 0, -14]} rot={Math.PI} />
+      <ServerRack pos={[15, 0, -11]} />
+      <ServerRack pos={[17, 0, -11]} />
+      <ServerRack pos={[19, 0, -11]} />
+      {/* Cooling unit */}
+      <Box pos={[20.4, 1.0, -12.5]} size={[0.4, 2.0, 4.0]} color="#374151" roughness={0.3} metalness={0.5} />
+      <mesh position={[20.3, 1.0, -12.5]}><boxGeometry args={[0.02, 1.8, 3.8]} /><meshStandardMaterial emissive="#3b82f6" emissiveIntensity={0.6} transparent opacity={0.7} /></mesh>
+      {/* Server room rug */}
+      <Rug pos={[17, 0.05, -12.5]} size={[7, 6]} color="#1e3a5f" />
+      {/* Ambient blue light for server area */}
+      <pointLight position={[17, 2.5, -12.5]} intensity={1.5} color="#3b82f6" distance={8} decay={2} />
+
+      {/* ── PHONE BOOTH / FOCUS POD ── */}
+      <PhoneBooth pos={[7.5, 0, 1.5]} />
+      <NeonSign pos={[7.5, 2.8, 0.5]} rot={0} text="FOCUS ZONE" color="#7c3aed" />
+
+      {/* ── NEON SIGNS on walls ── */}
+      {/* Main workstation motivational sign */}
+      <NeonSign pos={[10, 2.8, -20.6]} rot={0} text="BUILD · SHIP · REPEAT" color="#f59e0b" />
+      {/* CEO cabin sign */}
+      <NeonSign pos={[-14, 2.8, -20.6]} rot={0} text="THINK BIG" color="#4f46e5" />
+      {/* Lounge sign on east wall */}
+      <NeonSign pos={[20.6, 2.5, 11]} rot={Math.PI / 2} text="RECHARGE" color="#22c55e" />
+      {/* Meeting room sign */}
+      <NeonSign pos={[-20.6, 2.5, 9]} rot={-Math.PI / 2} text="COLLABORATE" color="#e07b54" />
+
+      {/* ── PING PONG TABLE in lounge ── */}
+      <PingPongTable pos={[13, 0, 17]} rot={Math.PI / 2} />
+
+      {/* ── AQUARIUM in reception ── */}
+      <Aquarium pos={[-3.5, 0, 17]} />
+      <Aquarium pos={[ 3.5, 0, 17]} />
+
+      {/* ── LOUNGE TV / DASHBOARD ── */}
+      <LoungeTV pos={[7.5, 2.2, 4.6]} rot={0} />
+
+      {/* ── WALL ART ── */}
+      {/* Workstation area wall art */}
+      <WallArt pos={[-1, 2.0, -20.6]} rot={0} colors={['#e07b54','#f59e0b','#22c55e','#4a90d9','#7c3aed']} />
+      <WallArt pos={[6, 2.0, -20.6]} rot={0} colors={['#e879a8','#d4891a','#2da8a8']} />
+      {/* CEO cabin west wall art */}
+      <WallArt pos={[-20.6, 2.0, -16]} rot={Math.PI / 2} colors={['#4f46e5','#c4956a','#f5f0e8']} />
+      <WallArt pos={[-20.6, 2.0, -11]} rot={Math.PI / 2} colors={['#22c55e','#f59e0b','#e07b54']} />
+      {/* Meeting room art */}
+      <WallArt pos={[-20.6, 2.0, 7]} rot={Math.PI / 2} colors={['#7c3aed','#e879a8','#4a90d9','#22c55e']} />
+      <WallArt pos={[-20.6, 2.0, 12]} rot={Math.PI / 2} colors={['#f59e0b','#e07b54','#d4891a']} />
+      {/* East wall art */}
+      <WallArt pos={[20.6, 2.0, -5]} rot={-Math.PI / 2} colors={['#22c55e','#4a90d9','#7c3aed']} />
+      <WallArt pos={[20.6, 2.0,  5]} rot={-Math.PI / 2} colors={['#e07b54','#f59e0b','#e879a8','#2da8a8']} />
+
+      {/* ── STANDING DESKS (variation in workstation area) ── */}
+      <StandingDesk pos={[7, 0, -14]} color="#c4956a" />
+      <StandingDesk pos={[7, 0, -8]} rot={Math.PI} color="#b8855a" />
+
+      {/* ── Extra lounge seating / bean bags ── */}
+      {[[8.5, 0, 16], [9.5, 0, 18], [11, 0, 19]].map(([x, y, z], i) => (
+        <group key={i} position={[x, y, z]}>
+          <mesh><sphereGeometry args={[0.4, 10, 8]} /><meshStandardMaterial color={['#e07b54','#7c3aed','#22c55e'][i]} roughness={0.9} /></mesh>
+          <mesh position={[0, -0.25, 0]}><sphereGeometry args={[0.38, 10, 6]} /><meshStandardMaterial color={['#c4956a','#6d28d9','#16a34a'][i]} roughness={0.9} /></mesh>
+        </group>
+      ))}
+
+      {/* ── Trophy shelf in CEO cabin ── */}
+      <Box pos={[-9.5, 1.2, -18.5]} size={[1.5, 0.05, 0.3]} color="#c4956a" roughness={0.4} />
+      {[-0.5, 0, 0.5].map((x, i) => (
+        <group key={i} position={[-9.5 + x, 1.25, -18.5]}>
+          <mesh><cylinderGeometry args={[0.04, 0.06, 0.25, 8]} /><meshStandardMaterial color="#d4a81a" roughness={0.2} metalness={0.8} /></mesh>
+          <mesh position={[0, 0.2, 0]}><sphereGeometry args={[0.07, 8, 6]} /><meshStandardMaterial color="#f5c842" roughness={0.1} metalness={0.9} /></mesh>
+        </group>
+      ))}
+
+      {/* ── Ceiling zone accent panels (visible top trim on walls) ── */}
+      <Box pos={[-13, 3.45, -13]} size={[9, 0.1, 8]} color="#f5c4a4" roughness={0.9} />
+      <Box pos={[-11, 3.45,  9]} size={[10, 0.1, 9]} color="#c4dff5" roughness={0.9} />
+      <Box pos={[ 13, 3.45, 12]} size={[11, 0.1, 10]} color="#c4f0d4" roughness={0.9} />
     </group>
   )
 }

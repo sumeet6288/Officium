@@ -39,11 +39,17 @@ router.post("/:agentId", async (req, res) => {
       content: m.content,
     }));
 
+  // Build dynamic memory context from conversation history
+  const totalExchanges = Math.floor(history.filter(m => m.role === 'user').length)
+  const memoryNote = totalExchanges > 1
+    ? `\n\n[MEMORY] You have had ${totalExchanges} previous exchanges with the CEO in this session. You remember everything discussed and build naturally on prior context — you do NOT re-introduce yourself or repeat earlier points.`
+    : `\n\n[MEMORY] This is the start of your conversation with the CEO. Greet them naturally in character.`
+
   try {
     const response = await anthropic.messages.create({
       model: "claude-haiku-4-5",
       max_tokens: 8192,
-      system: agent.systemPrompt,
+      system: agent.systemPrompt + memoryNote,
       messages,
     });
 
