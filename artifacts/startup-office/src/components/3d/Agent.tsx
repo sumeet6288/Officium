@@ -315,10 +315,12 @@ export function Agent3D({ agent, agents, onClick, selected }: AgentProps) {
     activityPhase: 0,
   })
 
-  const currentPos  = useRef(new THREE.Vector3(desk.x, 0, desk.z))
-  const facingAngle = useRef(desk.rot)
-  const velocity    = useRef(0)
-  const nearbyAgent = useRef(false)
+  const currentPos      = useRef(new THREE.Vector3(desk.x, 0, desk.z))
+  const facingAngle     = useRef(desk.rot)
+  const velocity        = useRef(0)
+  const nearbyAgent     = useRef(false)
+  const stuckCheckPos   = useRef(new THREE.Vector3(desk.x, 0, desk.z))
+  const stuckCheckTime  = useRef(0)
 
   const app = useMemo(() => getAppearance(agent.id), [agent.id])
 
@@ -462,9 +464,34 @@ export function Agent3D({ agent, agents, onClick, selected }: AgentProps) {
       setDisplayState(next.state)
     }
 
+    /* ── Stuck detection — if agent hasn't moved in 3s while walking, snap back to desk ── */
+    const isWalking = b.state === 'WALKING' || b.state === 'RETURNING'
+    if (isWalking) {
+      if (t - stuckCheckTime.current > 3.0) {
+        const moved = currentPos.current.distanceTo(stuckCheckPos.current)
+        if (moved < 0.08) {
+          // Teleport back to desk and reset state
+          currentPos.current.set(desk.x, 0, desk.z)
+          b.state = 'AT_DESK'
+          b.waypoints = []
+          b.waypointIdx = 0
+          b.returnPath = []
+          b._destState = undefined
+          b.seatPos = { ...desk }
+          b.chatTargetId = null
+          b.stateTimer = t + 5 + Math.random() * 10
+          setDisplayState('AT_DESK')
+        }
+        stuckCheckPos.current.copy(currentPos.current)
+        stuckCheckTime.current = t
+      }
+    } else {
+      stuckCheckPos.current.copy(currentPos.current)
+      stuckCheckTime.current = t
+    }
+
     /* ── Movement ── */
     const sitting  = isSitting(b.state)
-    const isWalking = b.state === 'WALKING' || b.state === 'RETURNING'
 
     if (isWalking && b.waypoints.length > 0) {
       const wp = b.waypoints[b.waypointIdx]

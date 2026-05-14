@@ -9,10 +9,11 @@ export const WALKABLE_ZONES: NavRect[] = [
   { xMin: -8.4, xMax: -7.2, zMin: -14.5, zMax: -12.5 },
   // Main workstation floor
   { xMin: -6.5, xMax: 19.8, zMin: -19.5, zMax: -1.8 },
-  // Central corridor (connects all zones)
-  { xMin: -8.0, xMax: 5.8, zMin: -2.2, zMax: 4.8 },
-  // Meeting room door gap at x ≈ -5, z ≈ 8
-  { xMin: -5.5, xMax: -4.5, zMin: 6.5, zMax: 9.5 },
+  // Central corridor — widened east (x to 9.0) to cover phone booth at x=7.5,
+  // and extended north (z to 7.5) to bridge the gap to the meeting room entrance
+  { xMin: -8.0, xMax: 9.0, zMin: -2.2, zMax: 7.5 },
+  // Meeting room approach wedge (fills z=7–9 for x=-6 to -4.5)
+  { xMin: -6.0, xMax: -4.0, zMin: 7.0, zMax: 9.5 },
   // Meeting room interior
   { xMin: -17.5, xMax: -5.3, zMin: 3.8, zMax: 15.5 },
   // Lounge area
