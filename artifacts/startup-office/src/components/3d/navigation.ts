@@ -25,14 +25,64 @@ export function isWalkable(x: number, z: number): boolean {
   return WALKABLE_ZONES.some(r => x >= r.xMin && x <= r.xMax && z >= r.zMin && z <= r.zMax)
 }
 
-/* Slide a movement along walls by zeroing out the blocked axis */
+/* ─── Furniture obstacle rectangles (impassable blocks inside walkable zones) ─── */
+export const OBSTACLE_RECTS: NavRect[] = [
+  // ── Workstation desk bodies ──
+  // Front desk rows at z≈-13 (rot=π → desk surface faces south, body at z:-14 to -13)
+  { xMin: -7.0, xMax: -0.5, zMin: -14.1, zMax: -12.9 },
+  { xMin:  0.5, xMax:  5.5, zMin: -14.1, zMax: -12.9 },
+  { xMin:  7.5, xMax: 13.0, zMin: -14.1, zMax: -12.9 },
+  // Back desk rows/standalone desks at z≈-8 (desk body at z:-8.6 to -7.5)
+  { xMin: -7.0, xMax: -0.5, zMin: -8.6, zMax: -7.4 },
+  { xMin:  0.5, xMax:  5.5, zMin: -8.6, zMax: -7.4 },
+  { xMin:  1.5, xMax:  4.5, zMin: -8.6, zMax: -7.4 },
+  { xMin:  8.5, xMax: 11.5, zMin: -8.6, zMax: -7.4 },
+  { xMin: 14.5, xMax: 17.5, zMin: -8.6, zMax: -7.4 },
+
+  // ── Meeting room table ── (chairs at x=-14.5,-7.5 and z=6.5,11.5 are outside)
+  { xMin: -13.8, xMax: -8.2, zMin: 7.5, zMax: 11.0 },
+
+  // ── Server racks (two rows, gap at z≈-12.5 for standing) ──
+  { xMin: 14.2, xMax: 20.5, zMin: -15.1, zMax: -13.6 },  // back row
+  { xMin: 14.2, xMax: 20.5, zMin: -11.6, zMax: -10.4 },  // front row
+
+  // ── Lounge furniture ──
+  { xMin: 11.5, xMax: 14.5, zMin:  9.0, zMax: 11.0 },    // coffee table
+  // Bar counter + coffee machine (zMin=14.6 leaves bar stools at z=14.5 accessible)
+  { xMin: 16.5, xMax: 20.5, zMin: 14.6, zMax: 18.5 },
+
+  // ── Reception desk counter ──
+  { xMin: -1.8, xMax: 1.8, zMin: 13.2, zMax: 15.3 },
+
+  // ── Aquariums ──
+  { xMin: -4.4, xMax: -2.2, zMin: 16.0, zMax: 18.2 },
+  { xMin:  2.2, xMax:  4.4, zMin: 16.0, zMax: 18.2 },
+
+  // ── Ping pong table (center x=13 z=17, rot=π/2 → spans x:11.5-14.5 z:15.5-18.5) ──
+  { xMin: 11.5, xMax: 14.5, zMin: 15.5, zMax: 18.5 },
+
+  // ── Bookshelf along east wall in workstation ──
+  { xMin: 18.0, xMax: 20.5, zMin: -12.5, zMax: -10.0 },
+
+  // ── Phone booth walls (leave interior open) ──
+  { xMin: 6.5, xMax: 8.5, zMin: 2.5, zMax: 3.0 },   // back wall
+  { xMin: 6.4, xMax: 6.7, zMin: 0.5, zMax: 2.6 },   // left wall
+  { xMin: 8.3, xMax: 8.6, zMin: 0.5, zMax: 2.6 },   // right wall
+]
+
+function isClear(x: number, z: number): boolean {
+  return !OBSTACLE_RECTS.some(r => x >= r.xMin && x <= r.xMax && z >= r.zMin && z <= r.zMax)
+}
+
+/* Slide a movement along walls/furniture by zeroing out the blocked axis */
 export function clampMovement(
   cx: number, cz: number,
   nx: number, nz: number,
 ): [number, number] {
-  if (isWalkable(nx, nz)) return [nx, nz]
-  if (isWalkable(nx, cz)) return [nx, cz]
-  if (isWalkable(cx, nz)) return [cx, nz]
+  const ok = (x: number, z: number) => isWalkable(x, z) && isClear(x, z)
+  if (ok(nx, nz)) return [nx, nz]
+  if (ok(nx, cz)) return [nx, cz]
+  if (ok(cx, nz)) return [cx, nz]
   return [cx, cz]
 }
 
@@ -66,7 +116,7 @@ export const LOUNGE_SPOTS: { x: number; z: number; rot: number }[] = [
 ]
 
 /* ─── Activity spots ─── */
-export const COFFEE_SPOT = { x: 17.5, z: 16.5, rot: -Math.PI / 2 }
+export const COFFEE_SPOT = { x: 17.5, z: 13.8, rot: Math.PI }   // standing in front of counter, facing it
 
 export const WHITEBOARD_SPOTS = [
   { x: -11.0, z: 6.2, rot: 0 },
@@ -79,9 +129,9 @@ export const PRESENTING_SPOT = { x: -11, z: 6.5, rot: 0 }
 export const PHONE_BOOTH_SPOT = { x: 7.5, z: 1.5, rot: Math.PI }
 
 export const SERVER_SPOTS = [
-  { x: 15.5, z: -11.5, rot:  Math.PI / 2 },
-  { x: 17.5, z: -11.5, rot:  Math.PI / 2 },
-  { x: 18.5, z: -13.5, rot: -Math.PI / 2 },
+  { x: 15.5, z: -12.5, rot: 0 },          // gap between the two rack rows
+  { x: 17.5, z: -12.5, rot: 0 },
+  { x: 16.5, z: -12.5, rot: Math.PI },
 ]
 
 export const PING_PONG_SPOTS = [
@@ -144,7 +194,7 @@ export const PATH_TO_COFFEE: NavPoint[] = [
   { x:  4, z: -2 },
   { x:  5, z:  5 },
   { x: 15, z: 10 },
-  { x: 17.5, z: 16.5 },
+  { x: 17.5, z: 13.8 },
 ]
 
 export const PATH_TO_WHITEBOARD: NavPoint[] = [
@@ -161,7 +211,7 @@ export const PATH_TO_PHONE_BOOTH: NavPoint[] = [
 
 export const PATH_TO_SERVER: NavPoint[] = [
   { x: 13, z: -5 },
-  { x: 17, z: -11.5 },
+  { x: 14, z: -12.5 },
 ]
 
 export const PATH_TO_PING_PONG: NavPoint[] = [
@@ -202,13 +252,13 @@ export const PATH_CEO_TO_COFFEE: NavPoint[] = [
   { x: -4,   z: -3 },
   { x:  4,   z:  3 },
   { x: 15,   z: 10 },
-  { x: 17.5, z: 16.5 },
+  { x: 17.5, z: 13.8 },
 ]
 
 export const PATH_CEO_TO_SERVER: NavPoint[] = [
   { x: -7.5, z: -13.5 },
   { x:  5,   z: -10 },
-  { x: 17,   z: -11.5 },
+  { x: 14,   z: -12.5 },
 ]
 
 export const PATH_CEO_FROM_COFFEE: NavPoint[] = [
