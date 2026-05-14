@@ -31,11 +31,8 @@ export function clampMovement(
   nx: number, nz: number,
 ): [number, number] {
   if (isWalkable(nx, nz)) return [nx, nz]
-  // Try sliding along X only
   if (isWalkable(nx, cz)) return [nx, cz]
-  // Try sliding along Z only
   if (isWalkable(cx, nz)) return [cx, nz]
-  // Fully blocked
   return [cx, cz]
 }
 
@@ -68,15 +65,36 @@ export const LOUNGE_SPOTS: { x: number; z: number; rot: number }[] = [
   { x: 18.5, z: 14.5, rot: Math.PI },
 ]
 
-export const WATER_COOLER: NavPoint = { x: 14, z: 18 }
+/* ─── Activity spots ─── */
+export const COFFEE_SPOT = { x: 17.5, z: 16.5, rot: -Math.PI / 2 }
+
+export const WHITEBOARD_SPOTS = [
+  { x: -11.0, z: 6.2, rot: 0 },
+  { x:  -9.5, z: 6.2, rot: 0 },
+  { x: -12.5, z: 6.2, rot: 0 },
+]
+
+export const PRESENTING_SPOT = { x: -11, z: 6.5, rot: 0 }
+
+export const PHONE_BOOTH_SPOT = { x: 7.5, z: 1.5, rot: Math.PI }
+
+export const SERVER_SPOTS = [
+  { x: 15.5, z: -11.5, rot:  Math.PI / 2 },
+  { x: 17.5, z: -11.5, rot:  Math.PI / 2 },
+  { x: 18.5, z: -13.5, rot: -Math.PI / 2 },
+]
+
+export const PING_PONG_SPOTS = [
+  { x: 10.8, z: 17, rot:  Math.PI / 2 },
+  { x: 15.2, z: 17, rot: -Math.PI / 2 },
+]
 
 /* ─── Waypoint paths between zones ─── */
-// Each entry: list of waypoints to traverse in order to reach a destination zone
 export const PATH_TO_MEETING: NavPoint[] = [
-  { x: -4, z: -2 },     // exit workstation area
-  { x: -4, z:  3 },     // corridor south
-  { x: -5, z:  8 },     // through meeting door
-  { x: -9, z:  9 },     // meeting room centre
+  { x: -4, z: -2 },
+  { x: -4, z:  3 },
+  { x: -5, z:  8 },
+  { x: -9, z:  9 },
 ]
 
 export const PATH_TO_LOUNGE: NavPoint[] = [
@@ -99,7 +117,7 @@ export const PATH_TO_DESK_FROM_LOUNGE: NavPoint[] = [
 ]
 
 export const PATH_CEO_TO_MEETING: NavPoint[] = [
-  { x: -7.5, z: -13.5 }, // through CEO door
+  { x: -7.5, z: -13.5 },
   { x: -6,   z: -3 },
   { x: -4,   z:  3 },
   { x: -5,   z:  8 },
@@ -117,6 +135,93 @@ export const PATH_CEO_RETURN: NavPoint[] = [
   { x: -9,   z:  9 },
   { x: -4,   z:  3 },
   { x: -6,   z: -3 },
+  { x: -7.5, z: -13.5 },
+  { x: -14,  z: -14 },
+]
+
+/* ─── New activity paths ─── */
+export const PATH_TO_COFFEE: NavPoint[] = [
+  { x:  4, z: -2 },
+  { x:  5, z:  5 },
+  { x: 15, z: 10 },
+  { x: 17.5, z: 16.5 },
+]
+
+export const PATH_TO_WHITEBOARD: NavPoint[] = [
+  { x: -4, z: -2 },
+  { x: -4, z:  3 },
+  { x: -5, z:  8 },
+  { x: -11, z: 6.5 },
+]
+
+export const PATH_TO_PHONE_BOOTH: NavPoint[] = [
+  { x: 5, z: -2 },
+  { x: 7.5, z: 1.5 },
+]
+
+export const PATH_TO_SERVER: NavPoint[] = [
+  { x: 13, z: -5 },
+  { x: 17, z: -11.5 },
+]
+
+export const PATH_TO_PING_PONG: NavPoint[] = [
+  { x:  4, z: -2 },
+  { x:  5, z:  5 },
+  { x: 13, z: 15 },
+]
+
+export const PATH_FROM_COFFEE: NavPoint[] = [
+  { x: 15, z: 10 },
+  { x:  5, z:  5 },
+  { x:  4, z: -2 },
+]
+
+export const PATH_FROM_WHITEBOARD: NavPoint[] = [
+  { x: -5, z:  8 },
+  { x: -4, z:  3 },
+  { x: -4, z: -2 },
+]
+
+export const PATH_FROM_PHONE_BOOTH: NavPoint[] = [
+  { x: 5, z: -2 },
+]
+
+export const PATH_FROM_SERVER: NavPoint[] = [
+  { x: 13, z: -8 },
+  { x:  5, z: -5 },
+]
+
+export const PATH_FROM_PING_PONG: NavPoint[] = [
+  { x: 13, z:  9 },
+  { x:  5, z:  5 },
+  { x:  4, z: -2 },
+]
+
+export const PATH_CEO_TO_COFFEE: NavPoint[] = [
+  { x: -7.5, z: -13.5 },
+  { x: -4,   z: -3 },
+  { x:  4,   z:  3 },
+  { x: 15,   z: 10 },
+  { x: 17.5, z: 16.5 },
+]
+
+export const PATH_CEO_TO_SERVER: NavPoint[] = [
+  { x: -7.5, z: -13.5 },
+  { x:  5,   z: -10 },
+  { x: 17,   z: -11.5 },
+]
+
+export const PATH_CEO_FROM_COFFEE: NavPoint[] = [
+  { x: 15,   z: 10 },
+  { x:  4,   z:  3 },
+  { x: -6,   z: -3 },
+  { x: -7.5, z: -13.5 },
+  { x: -14,  z: -14 },
+]
+
+export const PATH_CEO_FROM_SERVER: NavPoint[] = [
+  { x:  5, z: -10 },
+  { x: -5, z: -10 },
   { x: -7.5, z: -13.5 },
   { x: -14,  z: -14 },
 ]
