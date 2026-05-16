@@ -37,6 +37,8 @@ import {
   PATH_CEO_FROM_SERVER,
 } from './navigation'
 import { registerAgent, getAllAgentLive } from './agentRegistry'
+import { commandStore, type CEOCommand } from './commandStore'
+import { isOfficeOpen, getScheduledActivity } from './officeSchedule'
 
 /* ─────────────────────────────────────────────────────── *
  *  BRAIN STATE MACHINE                                     *
@@ -242,6 +244,118 @@ function stateConfig(
 }
 
 /* ─────────────────────────────────────────────────────── *
+ *  SCHEDULE-AWARE STATE PICKER                            *
+ * ─────────────────────────────────────────────────────── */
+
+function pickNextStateScheduled(
+  current: BrainState,
+  isCEO: boolean,
+  agentId: string,
+): ReturnType<typeof stateConfig> {
+  if (!isOfficeOpen()) {
+    return { ...stateConfig('AT_DESK', isCEO, agentId), duration: 60 }
+  }
+  const sched = getScheduledActivity()
+  if (sched === 'standup' && current !== 'AT_MEETING') {
+    return stateConfig('AT_MEETING', isCEO, agentId)
+  }
+  if (sched === 'lunch' && current !== 'AT_LOUNGE') {
+    return stateConfig('AT_LOUNGE', isCEO, agentId)
+  }
+  if (sched === 'coffee_break' && current !== 'AT_COFFEE') {
+    return stateConfig('AT_COFFEE', isCEO, agentId)
+  }
+  return pickNextState(current, isCEO, agentId)
+}
+
+/* ─────────────────────────────────────────────────────── *
+ *  CEO COMMAND APPLICATION                                *
+ * ─────────────────────────────────────────────────────── */
+
+function applyCommand(
+  b: BrainData,
+  cmd: CEOCommand,
+  t: number,
+  desk: { x: number; z: number; rot: number },
+  setDisplayState: (s: BrainState) => void,
+) {
+  b.waypoints   = []
+  b.waypointIdx = 0
+  b.returnPath  = []
+  b.chatTargetId = null
+  b._destState  = undefined
+  b._destDuration = undefined
+
+  switch (cmd) {
+    case 'work':
+    case 'dismiss': {
+      b.state = 'AT_DESK'
+      b.seatPos = { ...desk }
+      b.targetPos.set(desk.x, 0, desk.z)
+      b.stateTimer = t + 30 + Math.random() * 30
+      setDisplayState('AT_DESK')
+      break
+    }
+    case 'meeting': {
+      const cfg = stateConfig('AT_MEETING', b.isCEO, '')
+      if (cfg.toPath.length > 0) {
+        b.waypoints = cfg.toPath
+        b.returnPath = cfg.fromPath
+        b.targetPos.set(cfg.toPath[0].x, 0, cfg.toPath[0].z)
+        b.state = 'WALKING'
+        b._destState = 'AT_MEETING'
+        b._destDuration = cfg.duration
+        b.stateTimer = t + 120
+        setDisplayState('WALKING')
+      }
+      break
+    }
+    case 'lounge': {
+      const cfg = stateConfig('AT_LOUNGE', b.isCEO, '')
+      if (cfg.toPath.length > 0) {
+        b.waypoints = cfg.toPath
+        b.returnPath = cfg.fromPath
+        b.targetPos.set(cfg.toPath[0].x, 0, cfg.toPath[0].z)
+        b.state = 'WALKING'
+        b._destState = 'AT_LOUNGE'
+        b._destDuration = cfg.duration
+        b.stateTimer = t + 120
+        setDisplayState('WALKING')
+      }
+      break
+    }
+    case 'coffee': {
+      const cfg = stateConfig('AT_COFFEE', b.isCEO, '')
+      if (cfg.toPath.length > 0) {
+        b.waypoints = cfg.toPath
+        b.returnPath = cfg.fromPath
+        b.targetPos.set(cfg.toPath[0].x, 0, cfg.toPath[0].z)
+        b.state = 'WALKING'
+        b._destState = 'AT_COFFEE'
+        b._destDuration = cfg.duration
+        b.stateTimer = t + 120
+        setDisplayState('WALKING')
+      }
+      break
+    }
+    case 'focus': {
+      const cfg = stateConfig('AT_PHONE_BOOTH', b.isCEO, '')
+      if (cfg.toPath.length > 0) {
+        b.waypoints = cfg.toPath
+        b.returnPath = cfg.fromPath
+        b.targetPos.set(cfg.toPath[0].x, 0, cfg.toPath[0].z)
+        b.state = 'WALKING'
+        b._destState = 'AT_PHONE_BOOTH'
+        b._destDuration = cfg.duration
+        b.stateTimer = t + 120
+        setDisplayState('WALKING')
+      }
+      break
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────────────── *
  *  APPEARANCE                                             *
  * ─────────────────────────────────────────────────────── */
 
@@ -321,6 +435,7 @@ export function Agent3D({ agent, agents, onClick, selected }: AgentProps) {
   const nearbyAgent     = useRef(false)
   const stuckCheckPos   = useRef(new THREE.Vector3(desk.x, 0, desk.z))
   const stuckCheckTime  = useRef(0)
+  const lastCommandSeq  = useRef(0)
 
   const app = useMemo(() => getAppearance(agent.id), [agent.id])
 
@@ -377,6 +492,13 @@ export function Agent3D({ agent, agents, onClick, selected }: AgentProps) {
     const b   = brain.current
     const pid = agent.id.charCodeAt(0) // phase offset per agent
 
+    /* ── CEO Command check (fires immediately on new command) ── */
+    if (commandStore.seq > lastCommandSeq.current && commandStore.cmd) {
+      lastCommandSeq.current = commandStore.seq
+      applyCommand(b, commandStore.cmd, t, desk, setDisplayState)
+      return
+    }
+
     /* ── Thinking pulse ── */
     if (b.state === 'AT_DESK') {
       thinkShirtMat.emissiveIntensity = 0.15 + Math.sin(t * 4 + pid) * 0.1
@@ -398,7 +520,7 @@ export function Agent3D({ agent, agents, onClick, selected }: AgentProps) {
 
     /* ── State timer / transition ── */
     if (t > b.stateTimer) {
-      const next = pickNextState(b.state, b.isCEO, agent.id)
+      const next = pickNextStateScheduled(b.state, b.isCEO, agent.id)
       b.waypointIdx = 0
 
       /* ── Handle RETURNING — use stored returnPath ── */

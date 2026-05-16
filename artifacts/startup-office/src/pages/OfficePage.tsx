@@ -4,6 +4,7 @@ import { useSession } from '@/hooks/use-session'
 import { OfficeScene } from '@/components/3d/OfficeScene'
 import { Sidebar } from '@/components/Sidebar'
 import { ChatPanel } from '@/components/ChatPanel'
+import { CEOCommandBar } from '@/components/CEOCommandBar'
 import { Loader2 } from 'lucide-react'
 
 export function OfficePage() {
@@ -49,6 +50,8 @@ export function OfficePage() {
             onClose={() => setSelectedAgentId(null)}
           />
         )}
+
+        <CEOCommandBar />
       </div>
     </div>
   )
